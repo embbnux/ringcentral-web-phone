@@ -7,7 +7,7 @@
     "start": "./node_modules/.bin/http-server"
   },
   "dependencies": {
-    "sip.js": "^0.8.4"
+    "sip.js": "^0.11.0"
   },
   "devDependencies": {
     "chai": "3.5.0",

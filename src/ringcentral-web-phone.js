@@ -158,16 +158,18 @@
         this.appVersion = options.appVersion;
 
         var modifiers = options.modifiers || [];
-        modifiers.push(SIP.WebRTC.Modifiers.stripTcpCandidates)
+        modifiers.push(SIP.Web.Modifiers.stripTcpCandidates)
 
         var configuration = {
             uri: 'sip:' + this.sipInfo.username + '@' + this.sipInfo.domain,
-            wsServers: this.sipInfo.outboundProxy && this.sipInfo.transport
-                ? this.sipInfo.transport.toLowerCase() + '://' + this.sipInfo.outboundProxy
-                : this.sipInfo.wsServers,
+            transportOptions: {
+                wsServers: this.sipInfo.outboundProxy && this.sipInfo.transport
+                    ? this.sipInfo.transport.toLowerCase() + '://' + this.sipInfo.outboundProxy
+                    : this.sipInfo.wsServers,
+                traceSip: true,
+            },
             authorizationUser: this.sipInfo.authorizationId,
             password: this.sipInfo.password,
-            traceSip: true,
             stunServers: this.sipInfo.stunServers || ['stun:74.125.194.127:19302'], //FIXME Hardcoded?
             turnServers: [],
             log: {
@@ -1028,7 +1030,7 @@
         toggleMute(this, true);
         if (!silent) {
             this.emit('muted',this.session);
-        }    
+        }
     };
 
     function onHold (){
@@ -1043,10 +1045,10 @@
         }
         this.logger.log('Unmuting Audio');
         toggleMute(this,false);
-        
+
         if (!silent) {
             this.emit('unmuted',this.session);
-        }    
+        }
     };
 
     return WebPhone;

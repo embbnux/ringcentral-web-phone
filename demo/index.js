@@ -163,12 +163,12 @@ $(function() {
         var $modal = cloneTemplate($incomingTemplate).modal({backdrop: 'static'});
 
         var acceptOptions = {
-            media: {
-                render: {
-                    remote: document.getElementById('remoteVideo'),
-                    local: document.getElementById('localVideo')
-                }
-            }
+            // media: {
+            //     // render: {
+            //     //     remote: document.getElementById('remoteVideo'),
+            //     //     local: document.getElementById('localVideo')
+            //     // }
+            // }
         };
 
         $modal.find('.answer').on('click', function() {
@@ -427,10 +427,10 @@ $(function() {
 
         var session = webPhone.userAgent.invite(number, {
             media: {
-                render: {
-                    remote: document.getElementById('remoteVideo'),
-                    local: document.getElementById('localVideo')
-                }
+                // render: {
+                //     remote: document.getElementById('remoteVideo'),
+                //     local: document.getElementById('localVideo')
+                // }
             },
             fromNumber: username,
             homeCountryId: homeCountryId
