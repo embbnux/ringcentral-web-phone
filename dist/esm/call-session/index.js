@@ -17,12 +17,17 @@ class CallSession extends EventEmitter {
     outputDeviceId;
     reqid = 1;
     sdpVersion = 1;
+    _id;
     constructor(webPhone) {
         super();
         this.webPhone = webPhone;
+        this._id = uuid();
+    }
+    get id() {
+        return this._id;
     }
     get callId() {
-        return this.sipMessage?.headers["Call-Id"] ?? uuid();
+        return this.sipMessage?.headers["Call-Id"] ?? this._id;
     }
     get sessionId() {
         return this.sipMessage?.headers["p-rc-api-ids"].match(/session-id=(s-[0-9a-fz]+?)$/)?.[1];

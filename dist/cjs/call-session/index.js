@@ -22,12 +22,17 @@ class CallSession extends event_emitter_js_1.default {
     outputDeviceId;
     reqid = 1;
     sdpVersion = 1;
+    _id;
     constructor(webPhone) {
         super();
         this.webPhone = webPhone;
+        this._id = (0, utils_js_1.uuid)();
+    }
+    get id() {
+        return this._id;
     }
     get callId() {
-        return this.sipMessage?.headers["Call-Id"] ?? (0, utils_js_1.uuid)();
+        return this.sipMessage?.headers["Call-Id"] ?? this._id;
     }
     get sessionId() {
         return this.sipMessage?.headers["p-rc-api-ids"].match(/session-id=(s-[0-9a-fz]+?)$/)?.[1];

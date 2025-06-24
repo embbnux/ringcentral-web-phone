@@ -27,7 +27,9 @@ declare class CallSession extends EventEmitter {
     outputDeviceId: string | undefined;
     private reqid;
     private sdpVersion;
+    private _id;
     constructor(webPhone: WebPhone);
+    get id(): string;
     get callId(): string;
     get sessionId(): string;
     get partyId(): string;
