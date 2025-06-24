@@ -35,8 +35,9 @@ class WebPhone extends event_emitter_js_1.default {
                 inboundMessage.headers.CSeq.endsWith(" CANCEL")) {
                 const index = this.callSessions.findIndex((callSession) => callSession.callId === inboundMessage.headers["Call-Id"]);
                 if (index !== -1) {
-                    this.callSessions[index].dispose();
+                    const callSession = this.callSessions[index];
                     this.callSessions.splice(index, 1);
+                    callSession.dispose();
                 }
             }
             // listen for incoming calls

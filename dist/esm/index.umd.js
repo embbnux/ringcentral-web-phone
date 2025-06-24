@@ -26629,9 +26629,9 @@
            const progressMessage = await this.webPhone.sipClient.request(newMessage);
            this.sipMessage = progressMessage;
            this.state = "ringing";
-           this.emit("ringing");
            this.localPeer = progressMessage.headers.From;
            this.remotePeer = progressMessage.headers.To;
+           this.emit("ringing");
            // wait for the call to be answered
            // by SIP server design, this happens immediately, even if the callee has not received the INVITE
            return new Promise((resolve) => {
@@ -26889,8 +26889,9 @@
                    inboundMessage.headers.CSeq.endsWith(" CANCEL")) {
                    const index = this.callSessions.findIndex((callSession) => callSession.callId === inboundMessage.headers["Call-Id"]);
                    if (index !== -1) {
-                       this.callSessions[index].dispose();
+                       const callSession = this.callSessions[index];
                        this.callSessions.splice(index, 1);
+                       callSession.dispose();
                    }
                }
                // listen for incoming calls
