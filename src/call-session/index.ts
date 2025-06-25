@@ -80,6 +80,14 @@ class CallSession extends EventEmitter {
     return this.localPeer ? extractNumber(this.localPeer) : "";
   }
 
+  public get remoteTag() {
+    return this.remotePeer ? extractTag(this.remotePeer) : "";
+  }
+
+  public get localTag() {
+    return this.localPeer ? extractTag(this.localPeer) : "";
+  }
+
   public get isConference() {
     return this.remotePeer
       ? extractNumber(this.remotePeer).startsWith("conf_")
@@ -176,8 +184,8 @@ class CallSession extends EventEmitter {
       complete: async () => {
         await this._transfer(
           `"${target}@sip.ringcentral.com" <sip:${target}@sip.ringcentral.com;transport=wss?Replaces=${newSession.callId}%3Bto-tag%3D${
-            extractTag(newSession.remotePeer)
-          }%3Bfrom-tag%3D${extractTag(newSession.localPeer)}>`,
+            newSession.remoteTag
+          }%3Bfrom-tag%3D${newSession.localTag}>`,
         );
       },
       // cancel the transfer
@@ -187,6 +195,15 @@ class CallSession extends EventEmitter {
       },
       newSession,
     };
+  }
+
+  public async completeWarmTransfer(newSession: CallSession) {
+    const target = newSession.remoteNumber;
+    return await this._transfer(
+      `"${target}@sip.ringcentral.com" <sip:${target}@sip.ringcentral.com;transport=wss?Replaces=${newSession.callId}%3Bto-tag%3D${
+        newSession.remoteTag
+      }%3Bfrom-tag%3D${newSession.localTag}>`,
+    );
   }
 
   public async hangup() {
@@ -253,6 +270,7 @@ class CallSession extends EventEmitter {
   public dispose() {
     this.rtcPeerConnection?.close();
     this.mediaStream?.getTracks().forEach((track) => track.stop());
+    this.audioElement.srcObject = null;
     this.state = "disposed";
     this.emit("disposed");
     this.removeAllListeners();
