@@ -23950,6 +23950,12 @@
        get localNumber() {
            return this.localPeer ? extractNumber(this.localPeer) : "";
        }
+       get remoteTag() {
+           return this.remotePeer ? extractTag(this.remotePeer) : "";
+       }
+       get localTag() {
+           return this.localPeer ? extractTag(this.localPeer) : "";
+       }
        get isConference() {
            return this.remotePeer
                ? extractNumber(this.remotePeer).startsWith("conf_")
@@ -24026,7 +24032,7 @@
            return {
                // complete the transfer
                complete: async () => {
-                   await this._transfer(`"${target}@sip.ringcentral.com" <sip:${target}@sip.ringcentral.com;transport=wss?Replaces=${newSession.callId}%3Bto-tag%3D${extractTag(newSession.remotePeer)}%3Bfrom-tag%3D${extractTag(newSession.localPeer)}>`);
+                   await this._transfer(`"${target}@sip.ringcentral.com" <sip:${target}@sip.ringcentral.com;transport=wss?Replaces=${newSession.callId}%3Bto-tag%3D${newSession.remoteTag}%3Bfrom-tag%3D${newSession.localTag}>`);
                },
                // cancel the transfer
                cancel: async () => {
@@ -24035,6 +24041,10 @@
                },
                newSession,
            };
+       }
+       async completeWarmTransfer(newSession) {
+           const target = newSession.remoteNumber;
+           return await this._transfer(`"${target}@sip.ringcentral.com" <sip:${target}@sip.ringcentral.com;transport=wss?Replaces=${newSession.callId}%3Bto-tag%3D${newSession.remoteTag}%3Bfrom-tag%3D${newSession.localTag}>`);
        }
        async hangup() {
            const requestMessage = new RequestMessage(`BYE sip:${this.webPhone.sipInfo.domain} SIP/2.0`, {
@@ -24089,6 +24099,7 @@
        dispose() {
            this.rtcPeerConnection?.close();
            this.mediaStream?.getTracks().forEach((track) => track.stop());
+           this.audioElement.srcObject = null;
            this.state = "disposed";
            this.emit("disposed");
            this.removeAllListeners();
@@ -26582,9 +26593,11 @@
    }
 
    class OutboundCallSession extends CallSession {
-       constructor(webPhone) {
+       constructor(webPhone, callee) {
            super(webPhone);
            this.direction = "outbound";
+           this.localPeer = `<sip:${webPhone.sipInfo.username}@${webPhone.sipInfo.domain}>;tag=${this.id}`;
+           this.remotePeer = `<sip:${callee}@${webPhone.sipInfo.domain}>`;
        }
        async call(callee, callerId, options) {
            const offer = await this.rtcPeerConnection.createOffer({
@@ -26601,10 +26614,10 @@
                setTimeout(() => resolve(false), 3000);
            });
            const inviteMessage = new RequestMessage(`INVITE sip:${callee}@${this.webPhone.sipInfo.domain} SIP/2.0`, {
-               "Call-Id": uuid(),
+               "Call-Id": this.callId,
                Contact: `<sip:${fakeEmail};transport=wss>;expires=60`,
-               From: `<sip:${this.webPhone.sipInfo.username}@${this.webPhone.sipInfo.domain}>;tag=${uuid()}`,
-               To: `<sip:${callee}@${this.webPhone.sipInfo.domain}>`,
+               From: this.localPeer,
+               To: this.remotePeer,
                Via: `SIP/2.0/WSS ${fakeDomain};branch=${branch()}`,
                "Content-Type": "application/sdp",
            }, this.rtcPeerConnection.localDescription.sdp);
@@ -26967,7 +26980,7 @@
        }
        // make an outbound call
        async call(callee, callerId, options) {
-           this.callSessions.push(new OutboundCallSession(this));
+           this.callSessions.push(new OutboundCallSession(this, callee));
            // write it this way so that it will be compatible with manate, outboundCallSession will be managed
            const outboundCallSession = this
                .callSessions[this.callSessions.length - 1];

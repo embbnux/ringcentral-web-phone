@@ -41,6 +41,12 @@ class CallSession extends EventEmitter {
     get localNumber() {
         return this.localPeer ? extractNumber(this.localPeer) : "";
     }
+    get remoteTag() {
+        return this.remotePeer ? extractTag(this.remotePeer) : "";
+    }
+    get localTag() {
+        return this.localPeer ? extractTag(this.localPeer) : "";
+    }
     get isConference() {
         return this.remotePeer
             ? extractNumber(this.remotePeer).startsWith("conf_")
@@ -117,7 +123,7 @@ class CallSession extends EventEmitter {
         return {
             // complete the transfer
             complete: async () => {
-                await this._transfer(`"${target}@sip.ringcentral.com" <sip:${target}@sip.ringcentral.com;transport=wss?Replaces=${newSession.callId}%3Bto-tag%3D${extractTag(newSession.remotePeer)}%3Bfrom-tag%3D${extractTag(newSession.localPeer)}>`);
+                await this._transfer(`"${target}@sip.ringcentral.com" <sip:${target}@sip.ringcentral.com;transport=wss?Replaces=${newSession.callId}%3Bto-tag%3D${newSession.remoteTag}%3Bfrom-tag%3D${newSession.localTag}>`);
             },
             // cancel the transfer
             cancel: async () => {
@@ -126,6 +132,10 @@ class CallSession extends EventEmitter {
             },
             newSession,
         };
+    }
+    async completeWarmTransfer(newSession) {
+        const target = newSession.remoteNumber;
+        return await this._transfer(`"${target}@sip.ringcentral.com" <sip:${target}@sip.ringcentral.com;transport=wss?Replaces=${newSession.callId}%3Bto-tag%3D${newSession.remoteTag}%3Bfrom-tag%3D${newSession.localTag}>`);
     }
     async hangup() {
         const requestMessage = new RequestMessage(`BYE sip:${this.webPhone.sipInfo.domain} SIP/2.0`, {
@@ -180,6 +190,7 @@ class CallSession extends EventEmitter {
     dispose() {
         this.rtcPeerConnection?.close();
         this.mediaStream?.getTracks().forEach((track) => track.stop());
+        this.audioElement.srcObject = null;
         this.state = "disposed";
         this.emit("disposed");
         this.removeAllListeners();

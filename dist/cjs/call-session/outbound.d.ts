@@ -1,7 +1,7 @@
 import type WebPhone from "../index.js";
 import CallSession from "./index.js";
 declare class OutboundCallSession extends CallSession {
-    constructor(webPhone: WebPhone);
+    constructor(webPhone: WebPhone, callee: string);
     call(callee: string, callerId?: string, options?: {
         headers?: Record<string, string>;
     }): Promise<boolean>;

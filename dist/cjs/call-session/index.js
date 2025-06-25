@@ -46,6 +46,12 @@ class CallSession extends event_emitter_js_1.default {
     get localNumber() {
         return this.localPeer ? (0, utils_js_1.extractNumber)(this.localPeer) : "";
     }
+    get remoteTag() {
+        return this.remotePeer ? (0, utils_js_1.extractTag)(this.remotePeer) : "";
+    }
+    get localTag() {
+        return this.localPeer ? (0, utils_js_1.extractTag)(this.localPeer) : "";
+    }
     get isConference() {
         return this.remotePeer
             ? (0, utils_js_1.extractNumber)(this.remotePeer).startsWith("conf_")
@@ -122,7 +128,7 @@ class CallSession extends event_emitter_js_1.default {
         return {
             // complete the transfer
             complete: async () => {
-                await this._transfer(`"${target}@sip.ringcentral.com" <sip:${target}@sip.ringcentral.com;transport=wss?Replaces=${newSession.callId}%3Bto-tag%3D${(0, utils_js_1.extractTag)(newSession.remotePeer)}%3Bfrom-tag%3D${(0, utils_js_1.extractTag)(newSession.localPeer)}>`);
+                await this._transfer(`"${target}@sip.ringcentral.com" <sip:${target}@sip.ringcentral.com;transport=wss?Replaces=${newSession.callId}%3Bto-tag%3D${newSession.remoteTag}%3Bfrom-tag%3D${newSession.localTag}>`);
             },
             // cancel the transfer
             cancel: async () => {
@@ -131,6 +137,10 @@ class CallSession extends event_emitter_js_1.default {
             },
             newSession,
         };
+    }
+    async completeWarmTransfer(newSession) {
+        const target = newSession.remoteNumber;
+        return await this._transfer(`"${target}@sip.ringcentral.com" <sip:${target}@sip.ringcentral.com;transport=wss?Replaces=${newSession.callId}%3Bto-tag%3D${newSession.remoteTag}%3Bfrom-tag%3D${newSession.localTag}>`);
     }
     async hangup() {
         const requestMessage = new request_js_1.default(`BYE sip:${this.webPhone.sipInfo.domain} SIP/2.0`, {
@@ -185,6 +195,7 @@ class CallSession extends event_emitter_js_1.default {
     dispose() {
         this.rtcPeerConnection?.close();
         this.mediaStream?.getTracks().forEach((track) => track.stop());
+        this.audioElement.srcObject = null;
         this.state = "disposed";
         this.emit("disposed");
         this.removeAllListeners();

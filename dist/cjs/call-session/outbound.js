@@ -7,9 +7,11 @@ const request_js_1 = __importDefault(require("../sip-message/outbound/request.js
 const index_js_1 = __importDefault(require("./index.js"));
 const utils_js_1 = require("../utils.js");
 class OutboundCallSession extends index_js_1.default {
-    constructor(webPhone) {
+    constructor(webPhone, callee) {
         super(webPhone);
         this.direction = "outbound";
+        this.localPeer = `<sip:${webPhone.sipInfo.username}@${webPhone.sipInfo.domain}>;tag=${this.id}`;
+        this.remotePeer = `<sip:${callee}@${webPhone.sipInfo.domain}>`;
     }
     async call(callee, callerId, options) {
         const offer = await this.rtcPeerConnection.createOffer({
@@ -26,10 +28,10 @@ class OutboundCallSession extends index_js_1.default {
             setTimeout(() => resolve(false), 3000);
         });
         const inviteMessage = new request_js_1.default(`INVITE sip:${callee}@${this.webPhone.sipInfo.domain} SIP/2.0`, {
-            "Call-Id": (0, utils_js_1.uuid)(),
+            "Call-Id": this.callId,
             Contact: `<sip:${utils_js_1.fakeEmail};transport=wss>;expires=60`,
-            From: `<sip:${this.webPhone.sipInfo.username}@${this.webPhone.sipInfo.domain}>;tag=${(0, utils_js_1.uuid)()}`,
-            To: `<sip:${callee}@${this.webPhone.sipInfo.domain}>`,
+            From: this.localPeer,
+            To: this.remotePeer,
             Via: `SIP/2.0/WSS ${utils_js_1.fakeDomain};branch=${(0, utils_js_1.branch)()}`,
             "Content-Type": "application/sdp",
         }, this.rtcPeerConnection.localDescription.sdp);

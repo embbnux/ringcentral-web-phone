@@ -35,6 +35,8 @@ declare class CallSession extends EventEmitter {
     get partyId(): string;
     get remoteNumber(): string;
     get localNumber(): string;
+    get remoteTag(): string;
+    get localTag(): string;
     get isConference(): boolean;
     init(): Promise<void>;
     changeInputDevice(deviceId: string): Promise<void>;
@@ -45,6 +47,7 @@ declare class CallSession extends EventEmitter {
         cancel: () => Promise<void>;
         newSession: OutboundCallSession;
     }>;
+    completeWarmTransfer(newSession: CallSession): Promise<void>;
     hangup(): Promise<void>;
     startRecording(): Promise<CommandResult>;
     stopRecording(): Promise<CommandResult>;
