@@ -204,7 +204,9 @@ class CallSession extends event_emitter_js_1.default {
     dispose() {
         this.rtcPeerConnection?.close();
         this.mediaStream?.getTracks().forEach((track) => track.stop());
-        this.audioElement.srcObject = null;
+        if (this.audioElement) {
+            this.audioElement.srcObject = null;
+        }
         this.state = "disposed";
         this.emit("disposed");
         this.removeAllListeners();
