@@ -145,15 +145,15 @@ class InboundCallSession extends index_js_1.default {
         });
     }
     async sendRcMessage(cmd, body = {}) {
-        if (!this.sipMessage.headers["P-rc"]) {
+        const rcHeaders = this.rcHeaders;
+        if (!rcHeaders) {
             return;
         }
-        const rcMessage = await rc_message_js_1.default.fromXml(this.sipMessage.headers["P-rc"]);
         const newRcMessage = new rc_message_js_1.default({
-            SID: rcMessage.headers.SID,
-            Req: rcMessage.headers.Req,
-            From: rcMessage.headers.To,
-            To: rcMessage.headers.From,
+            SID: rcHeaders.SID,
+            Req: rcHeaders.Req,
+            From: rcHeaders.To,
+            To: rcHeaders.From,
             Cmd: cmd.toString(),
         }, {
             Cln: this.webPhone.sipInfo.authorizationId,
@@ -162,7 +162,7 @@ class InboundCallSession extends index_js_1.default {
         const requestSipMessage = new request_js_1.default(`MESSAGE sip:${newRcMessage.headers.To} SIP/2.0`, {
             Via: `SIP/2.0/WSS ${utils_js_1.fakeDomain};branch=${(0, utils_js_1.branch)()}`,
             To: `<sip:${newRcMessage.headers.To}>`,
-            From: `<sip:${this.webPhone.sipInfo.username}@${this.webPhone.sipInfo.domain}>;tag=${(0, utils_js_1.uuid)()}`,
+            From: `<sip:${this.webPhone.sipInfo.username}@${this.webPhone.sipInfo.domain}>;tag=${this.id}`,
             "Call-Id": this.callId,
             "Content-Type": "x-rc/agent",
         }, newRcMessage.toXml());

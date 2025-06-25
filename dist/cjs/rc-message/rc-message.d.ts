@@ -1,7 +1,7 @@
-interface HDR {
+export interface HDR {
     [key: string]: string | undefined;
 }
-interface BDY {
+export interface BDY {
     [key: string]: string | undefined;
 }
 declare class RcMessage {

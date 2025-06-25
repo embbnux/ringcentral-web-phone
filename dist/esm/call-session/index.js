@@ -3,6 +3,7 @@ import EventEmitter from "../event-emitter.js";
 import RequestMessage from "../sip-message/outbound/request.js";
 import { branch, extractAddress, extractNumber, extractTag, fakeDomain, uuid, } from "../utils.js";
 import ResponseMessage from "../sip-message/outbound/response.js";
+import RcMessage from "../rc-message/rc-message.js";
 class CallSession extends EventEmitter {
     webPhone;
     sipMessage;
@@ -51,6 +52,14 @@ class CallSession extends EventEmitter {
         return this.remotePeer
             ? extractNumber(this.remotePeer).startsWith("conf_")
             : false;
+    }
+    get rcHeaders() {
+        const rcHeaders = this.sipMessage?.headers["P-rc"];
+        if (!rcHeaders) {
+            return null;
+        }
+        const msg = RcMessage.fromXml(rcHeaders);
+        return msg.headers;
     }
     async init() {
         this.rtcPeerConnection = new RTCPeerConnection({

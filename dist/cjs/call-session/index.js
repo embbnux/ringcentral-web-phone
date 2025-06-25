@@ -8,6 +8,7 @@ const event_emitter_js_1 = __importDefault(require("../event-emitter.js"));
 const request_js_1 = __importDefault(require("../sip-message/outbound/request.js"));
 const utils_js_1 = require("../utils.js");
 const response_js_1 = __importDefault(require("../sip-message/outbound/response.js"));
+const rc_message_js_1 = __importDefault(require("../rc-message/rc-message.js"));
 class CallSession extends event_emitter_js_1.default {
     webPhone;
     sipMessage;
@@ -56,6 +57,14 @@ class CallSession extends event_emitter_js_1.default {
         return this.remotePeer
             ? (0, utils_js_1.extractNumber)(this.remotePeer).startsWith("conf_")
             : false;
+    }
+    get rcHeaders() {
+        const rcHeaders = this.sipMessage?.headers["P-rc"];
+        if (!rcHeaders) {
+            return null;
+        }
+        const msg = rc_message_js_1.default.fromXml(rcHeaders);
+        return msg.headers;
     }
     async init() {
         this.rtcPeerConnection = new RTCPeerConnection({

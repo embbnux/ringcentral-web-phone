@@ -38,6 +38,7 @@ declare class CallSession extends EventEmitter {
     get remoteTag(): string;
     get localTag(): string;
     get isConference(): boolean;
+    get rcHeaders(): import("../rc-message/rc-message.js").HDR;
     init(): Promise<void>;
     changeInputDevice(deviceId: string): Promise<void>;
     changeOutputDevice(deviceId: string): Promise<void>;
