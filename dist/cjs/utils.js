@@ -36,7 +36,10 @@ const extractAddress = (s) => s.match(/<(sip:.+?)>/)[1];
 exports.extractAddress = extractAddress;
 const extractNumber = (s) => s.match(/<sip:(.+?)@/)[1];
 exports.extractNumber = extractNumber;
-const extractTag = (peer) => peer.match(/;tag=(.*)/)[1];
+const extractTag = (peer) => {
+    const match = peer.match(/;tag=(.*)/);
+    return match ? match[1] : "";
+};
 exports.extractTag = extractTag;
 exports.fakeDomain = (0, exports.uuid)() + ".invalid";
 exports.fakeEmail = (0, exports.uuid)() + "@" + exports.fakeDomain;

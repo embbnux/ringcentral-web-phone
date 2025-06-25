@@ -24,6 +24,9 @@ export const generateAuthorization = (sipInfo, nonce, method) => {
 export const withoutTag = (s) => s.replace(/;tag=.*$/, "");
 export const extractAddress = (s) => s.match(/<(sip:.+?)>/)[1];
 export const extractNumber = (s) => s.match(/<sip:(.+?)@/)[1];
-export const extractTag = (peer) => peer.match(/;tag=(.*)/)[1];
+export const extractTag = (peer) => {
+    const match = peer.match(/;tag=(.*)/);
+    return match ? match[1] : "";
+};
 export const fakeDomain = uuid() + ".invalid";
 export const fakeEmail = uuid() + "@" + fakeDomain;

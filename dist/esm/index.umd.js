@@ -22904,7 +22904,10 @@
    const withoutTag = (s) => s.replace(/;tag=.*$/, "");
    const extractAddress = (s) => s.match(/<(sip:.+?)>/)[1];
    const extractNumber = (s) => s.match(/<sip:(.+?)@/)[1];
-   const extractTag = (peer) => peer.match(/;tag=(.*)/)[1];
+   const extractTag = (peer) => {
+       const match = peer.match(/;tag=(.*)/);
+       return match ? match[1] : "";
+   };
    const fakeDomain = uuid() + ".invalid";
    const fakeEmail = uuid() + "@" + fakeDomain;
 
