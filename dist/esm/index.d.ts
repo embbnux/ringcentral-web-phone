@@ -8,6 +8,7 @@ declare class WebPhone extends EventEmitter {
     deviceManager: DeviceManager;
     callSessions: CallSession[];
     autoAnswer: boolean;
+    clientId?: string;
     disposed: boolean;
     constructor(options: WebPhoneOptions);
     start(): Promise<void>;

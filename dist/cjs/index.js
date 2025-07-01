@@ -17,6 +17,7 @@ class WebPhone extends event_emitter_js_1.default {
     deviceManager;
     callSessions = [];
     autoAnswer = false;
+    clientId;
     disposed = false;
     constructor(options) {
         mixpanel_browser_1.default.identify(options.sipInfo.username);
@@ -25,6 +26,7 @@ class WebPhone extends event_emitter_js_1.default {
             version: "2.1.8",
         });
         super();
+        this.clientId = options.clientId;
         this.sipInfo = options.sipInfo;
         this.sipClient = options.sipClient ?? new sip_client_js_1.DefaultSipClient(options);
         this.deviceManager = options.deviceManager ?? new device_manager_js_1.DefaultDeviceManager();

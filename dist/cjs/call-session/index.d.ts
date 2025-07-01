@@ -30,6 +30,7 @@ declare class CallSession extends EventEmitter {
     private _id;
     constructor(webPhone: WebPhone);
     get id(): string;
+    get clientId(): string;
     get callId(): string;
     get sessionId(): string;
     get partyId(): string;

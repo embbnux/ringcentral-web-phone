@@ -26090,6 +26090,9 @@
        get id() {
            return this._id;
        }
+       get clientId() {
+           return this.webPhone.clientId;
+       }
        get callId() {
            return this.sipMessage?.headers["Call-Id"] ?? this._id;
        }
@@ -26554,11 +26557,15 @@
                };
                setTimeout(() => resolve(false), 3000);
            });
+           const answerHeaders = {
+               "Content-Type": "application/sdp",
+           };
+           if (this.clientId) {
+               answerHeaders["Client-id"] = this.clientId;
+           }
            const newMessage = new ResponseMessage(this.sipMessage, {
                responseCode: 200,
-               headers: {
-                   "Content-Type": "application/sdp",
-               },
+               headers: answerHeaders,
                body: answer.sdp,
            });
            await this.webPhone.sipClient.reply(newMessage);
@@ -26626,14 +26633,18 @@
                };
                setTimeout(() => resolve(false), 3000);
            });
-           const inviteMessage = new RequestMessage(`INVITE sip:${callee}@${this.webPhone.sipInfo.domain} SIP/2.0`, {
+           const inviteHeaders = {
                "Call-Id": this.callId,
                Contact: `<sip:${fakeEmail};transport=wss>;expires=60`,
                From: this.localPeer,
                To: this.remotePeer,
                Via: `SIP/2.0/WSS ${fakeDomain};branch=${branch()}`,
                "Content-Type": "application/sdp",
-           }, this.rtcPeerConnection.localDescription.sdp);
+           };
+           if (this.clientId) {
+               inviteHeaders["Client-id"] = this.clientId;
+           }
+           const inviteMessage = new RequestMessage(`INVITE sip:${callee}@${this.webPhone.sipInfo.domain} SIP/2.0`, inviteHeaders, this.rtcPeerConnection.localDescription.sdp);
            if (callerId) {
                inviteMessage.headers["P-Asserted-Identity"] =
                    `sip:${callerId}@${this.webPhone.sipInfo.domain}`;
@@ -26724,12 +26735,14 @@
        sipInfo;
        instanceId;
        debug;
+       clientId;
        timeoutHandle;
        constructor(options) {
            super();
            this.sipInfo = options.sipInfo;
            this.instanceId = options.instanceId ?? this.sipInfo.authorizationId;
            this.debug = options.debug ?? false;
+           this.clientId = options.clientId;
        }
        async start() {
            await this.connect();
@@ -26797,13 +26810,17 @@
            this.wsc.close();
        }
        async register(expires) {
-           const requestMessage = new RequestMessage(`REGISTER sip:${this.sipInfo.domain} SIP/2.0`, {
+           const headers = {
                "Call-Id": uuid(),
                Contact: `<sip:${fakeEmail};transport=wss>;+sip.instance="<urn:uuid:${this.instanceId}>";expires=${expires}`,
                From: `<sip:${this.sipInfo.username}@${this.sipInfo.domain}>;tag=${uuid()}`,
                To: `<sip:${this.sipInfo.username}@${this.sipInfo.domain}>`,
                Via: `SIP/2.0/WSS ${fakeDomain};branch=${branch()}`,
-           });
+           };
+           if (this.clientId) {
+               headers["Client-id"] = this.clientId;
+           }
+           const requestMessage = new RequestMessage(`REGISTER sip:${this.sipInfo.domain} SIP/2.0`, headers);
            // if cannot get response in 5 seconds, we close the connection
            const closeHandle = setTimeout(() => this.wsc.close(), 5000);
            let inboundMessage = await this.request(requestMessage);
@@ -26897,6 +26914,7 @@
        deviceManager;
        callSessions = [];
        autoAnswer = false;
+       clientId;
        disposed = false;
        constructor(options) {
            mixpanel.identify(options.sipInfo.username);
@@ -26905,6 +26923,7 @@
                version: "2.1.8",
            });
            super();
+           this.clientId = options.clientId;
            this.sipInfo = options.sipInfo;
            this.sipClient = options.sipClient ?? new DefaultSipClient(options);
            this.deviceManager = options.deviceManager ?? new DefaultDeviceManager();

@@ -6,6 +6,7 @@ export interface SipClientOptions {
     sipInfo: SipInfo;
     instanceId?: string;
     debug?: boolean;
+    clientId?: string;
 }
 export type WebPhoneOptions = SipClientOptions & {
     sipClient?: SipClient;

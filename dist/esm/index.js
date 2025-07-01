@@ -12,6 +12,7 @@ class WebPhone extends EventEmitter {
     deviceManager;
     callSessions = [];
     autoAnswer = false;
+    clientId;
     disposed = false;
     constructor(options) {
         mp.identify(options.sipInfo.username);
@@ -20,6 +21,7 @@ class WebPhone extends EventEmitter {
             version: "2.1.8",
         });
         super();
+        this.clientId = options.clientId;
         this.sipInfo = options.sipInfo;
         this.sipClient = options.sipClient ?? new DefaultSipClient(options);
         this.deviceManager = options.deviceManager ?? new DefaultDeviceManager();

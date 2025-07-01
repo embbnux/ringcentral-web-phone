@@ -11,12 +11,14 @@ export class DefaultSipClient extends EventEmitter {
     sipInfo;
     instanceId;
     debug;
+    clientId;
     timeoutHandle;
     constructor(options) {
         super();
         this.sipInfo = options.sipInfo;
         this.instanceId = options.instanceId ?? this.sipInfo.authorizationId;
         this.debug = options.debug ?? false;
+        this.clientId = options.clientId;
     }
     async start() {
         await this.connect();
@@ -84,13 +86,17 @@ export class DefaultSipClient extends EventEmitter {
         this.wsc.close();
     }
     async register(expires) {
-        const requestMessage = new RequestMessage(`REGISTER sip:${this.sipInfo.domain} SIP/2.0`, {
+        const headers = {
             "Call-Id": uuid(),
             Contact: `<sip:${fakeEmail};transport=wss>;+sip.instance="<urn:uuid:${this.instanceId}>";expires=${expires}`,
             From: `<sip:${this.sipInfo.username}@${this.sipInfo.domain}>;tag=${uuid()}`,
             To: `<sip:${this.sipInfo.username}@${this.sipInfo.domain}>`,
             Via: `SIP/2.0/WSS ${fakeDomain};branch=${branch()}`,
-        });
+        };
+        if (this.clientId) {
+            headers["Client-id"] = this.clientId;
+        }
+        const requestMessage = new RequestMessage(`REGISTER sip:${this.sipInfo.domain} SIP/2.0`, headers);
         // if cannot get response in 5 seconds, we close the connection
         const closeHandle = setTimeout(() => this.wsc.close(), 5000);
         let inboundMessage = await this.request(requestMessage);

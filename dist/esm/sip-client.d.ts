@@ -9,6 +9,7 @@ export declare class DefaultSipClient extends EventEmitter implements SipClient 
     sipInfo: SipInfo;
     instanceId: string;
     private debug;
+    clientId?: string;
     private timeoutHandle;
     constructor(options: SipClientOptions);
     start(): Promise<void>;

@@ -22,14 +22,18 @@ class OutboundCallSession extends CallSession {
             };
             setTimeout(() => resolve(false), 3000);
         });
-        const inviteMessage = new RequestMessage(`INVITE sip:${callee}@${this.webPhone.sipInfo.domain} SIP/2.0`, {
+        const inviteHeaders = {
             "Call-Id": this.callId,
             Contact: `<sip:${fakeEmail};transport=wss>;expires=60`,
             From: this.localPeer,
             To: this.remotePeer,
             Via: `SIP/2.0/WSS ${fakeDomain};branch=${branch()}`,
             "Content-Type": "application/sdp",
-        }, this.rtcPeerConnection.localDescription.sdp);
+        };
+        if (this.clientId) {
+            inviteHeaders["Client-id"] = this.clientId;
+        }
+        const inviteMessage = new RequestMessage(`INVITE sip:${callee}@${this.webPhone.sipInfo.domain} SIP/2.0`, inviteHeaders, this.rtcPeerConnection.localDescription.sdp);
         if (callerId) {
             inviteMessage.headers["P-Asserted-Identity"] =
                 `sip:${callerId}@${this.webPhone.sipInfo.domain}`;
