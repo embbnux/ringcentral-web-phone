@@ -26144,6 +26144,7 @@
                video: false,
                audio: { deviceId: { exact: this.inputDeviceId } },
            });
+           this.emit("userMedia", this.mediaStream);
            this.mediaStream.getAudioTracks().forEach((track) => {
                const rtcRtpSender = this.rtcPeerConnection.addTrack(track);
                // ref: https://github.com/ringcentral/ringcentral-web-phone/issues/257
